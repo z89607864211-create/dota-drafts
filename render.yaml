@@ -2,7 +2,7 @@ services:
   - type: web
     name: dota-drafts
     runtime: node
-    buildCommand: npm install --prefix frontend && npm run build --prefix frontend && npm install --prefix backend
+    buildCommand: npm install && cd frontend && npm install && npm run build && cd ../backend && npm install
     startCommand: node backend/src/index.js
     envVars:
       - key: NODE_ENV
