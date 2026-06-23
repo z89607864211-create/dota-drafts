@@ -11,7 +11,7 @@
 
 .container h2 {
   font-size: 1.3rem;
-  color: #e94560;
+  color: var(--accent);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -22,7 +22,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #ef4444;
+  background-color: var(--danger);
   display: inline-block;
   animation: pulse 2s infinite;
 }
@@ -43,20 +43,20 @@
   width: 100%;
   padding: 10px 16px;
   border-radius: 8px;
-  border: 1px solid #0f3460;
-  background-color: #16213e;
-  color: #eee;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .searchInput:focus {
-  border-color: #e94560;
+  border-color: var(--accent);
 }
 
 .searchInput::placeholder {
-  opacity: 0.5;
+  color: var(--text-muted);
 }
 
 .statusFilters {
@@ -68,9 +68,9 @@
 .filterBtn {
   padding: 6px 14px;
   border-radius: 6px;
-  border: 1px solid #0f3460;
-  background-color: #16213e;
-  color: #aaa;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -78,32 +78,32 @@
 }
 
 .filterBtn:hover {
-  background-color: #1e2d50;
-  color: #eee;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .filterBtn.active {
-  background-color: #0f3460;
-  color: #eee;
-  border-color: #e94560;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent);
 }
 
 .filterBtn.liveBtn.active {
   background-color: rgba(239, 68, 68, 0.2);
-  border-color: #ef4444;
-  color: #ef4444;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .filterBtn.draftingBtn.active {
   background-color: rgba(234, 179, 8, 0.2);
-  border-color: #eab308;
-  color: #eab308;
+  border-color: var(--warning);
+  color: var(--warning);
 }
 
 .filterBtn.upcomingBtn.active {
   background-color: rgba(59, 130, 246, 0.2);
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: var(--info);
+  color: var(--info);
 }
 
 .grid {
@@ -115,9 +115,9 @@
 .empty {
   text-align: center;
   padding: 60px 20px;
-  background-color: #16213e;
+  background-color: var(--card-bg);
   border-radius: 12px;
-  border: 1px solid #0f3460;
+  border: 1px solid var(--card-border);
 }
 
 .emptyIcon {
@@ -127,16 +127,17 @@
 
 .empty p {
   margin: 8px 0;
+  color: var(--text-primary);
 }
 
 .hint {
-  opacity: 0.5;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 .skeleton {
   animation: shimmer 1.5s infinite;
-  background: linear-gradient(90deg, #16213e 25%, #1e2d50 50%, #16213e 75%);
+  background: linear-gradient(90deg, var(--card-bg) 25%, var(--bg-tertiary) 50%, var(--card-bg) 75%);
   background-size: 200% 100%;
 }
 
@@ -148,7 +149,7 @@
 .skelLine {
   height: 12px;
   border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-tertiary);
 }
 
 .skelTeams {
@@ -163,5 +164,5 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-tertiary);
 }

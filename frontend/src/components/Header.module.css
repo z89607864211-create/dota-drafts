@@ -3,8 +3,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background-color: #16213e;
-  border-bottom: 1px solid #0f3460;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .logo {
@@ -16,7 +16,7 @@
 .logo h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #e94560;
+  color: var(--accent);
 }
 
 .icon {
@@ -35,16 +35,37 @@
 }
 
 .nav a:hover {
-  background-color: #0f3460;
+  background-color: var(--bg-secondary);
 }
 
 .nav a.active {
-  background-color: #e94560;
+  background-color: var(--accent);
 }
 
 .nav a.disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.themeToggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.themeToggle:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent);
 }
 
 .status {
