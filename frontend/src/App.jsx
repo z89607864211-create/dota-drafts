@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import LiveDrafts from './components/LiveDrafts'
+import MatchDetail from './components/MatchDetail'
 import useSocket from './hooks/useSocket'
 import styles from './App.module.css'
 
@@ -12,13 +14,18 @@ function App() {
   useSocket(setMatches, setConnected)
   
   return (
-    <div className={styles.app}>
-      <Header connected={connected} />
-      <main className={styles.main}>
-        <LiveDrafts matches={matches} />
-      </main>
-      <Footer />
-    </div>
+    <BrowserRouter>
+      <div className={styles.app}>
+        <Header connected={connected} />
+        <main className={styles.main}>
+          <Routes>
+            <Route path="/" element={<LiveDrafts matches={matches} />} />
+            <Route path="/match/:id" element={<MatchDetail />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </BrowserRouter>
   )
 }
 

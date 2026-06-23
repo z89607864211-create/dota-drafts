@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { getHeroByName, getHeroImage } from '../utils/heroData'
 import styles from './DraftCard.module.css'
 
@@ -18,7 +19,7 @@ function HeroPill({ hero, type }) {
 }
 
 export default function DraftCard({ match }) {
-  const { tournament, teamA, teamB, teamALogo, teamBLogo, bans, picks, status, format, matchTime, teamAScore, teamBScore, source } = match
+  const { id, tournament, teamA, teamB, teamALogo, teamBLogo, bans, picks, status, format, matchTime, teamAScore, teamBScore, source } = match
 
   const statusLabels = {
     live: 'LIVE',
@@ -29,7 +30,7 @@ export default function DraftCard({ match }) {
   }
 
   return (
-    <div className={`${styles.card} ${status === 'live' ? styles.cardLive : ''}`}>
+    <Link to={`/match/${id}`} className={`${styles.card} ${status === 'live' ? styles.cardLive : ''}`}>
       <div className={styles.header}>
         <span className={styles.tournament}>{tournament || 'Unknown Tournament'}</span>
         {format && <span className={styles.format}>{format.toUpperCase()}</span>}
@@ -77,6 +78,6 @@ export default function DraftCard({ match }) {
         {matchTime && <span className={styles.time}>{matchTime}</span>}
         {source && <span className={styles.source}>{source}</span>}
       </div>
-    </div>
+    </Link>
   )
 }

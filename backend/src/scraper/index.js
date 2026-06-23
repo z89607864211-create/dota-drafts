@@ -22,6 +22,35 @@ async function scrapeWithRetry(fn, name, retries = MAX_RETRIES) {
   return [];
 }
 
+function normalizeTeamName(name) {
+  return name?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
+}
+
+function deduplicateMatches(matches) {
+  const seen = new Map();
+  const result = [];
+
+  for (const match of matches) {
+    const key1 = `${normalizeTeamName(match.teamA)}-${normalizeTeamName(match.teamB)}`;
+    const key2 = `${normalizeTeamName(match.teamB)}-${normalizeTeamName(match.teamA)}`;
+    
+    if (seen.has(key1) || seen.has(key2)) {
+      const existing = seen.get(key1) || seen.get(key2);
+      if (match.picks.length > existing.picks.length) {
+        const idx = result.indexOf(existing);
+        if (idx !== -1) result[idx] = match;
+      }
+      continue;
+    }
+
+    seen.set(key1, match);
+    seen.set(key2, match);
+    result.push(match);
+  }
+
+  return result;
+}
+
 export async function scrapeAll(io) {
   if (isScraping) {
     console.log('Scraping already in progress, skipping...');
@@ -37,10 +66,12 @@ export async function scrapeAll(io) {
       scrapeWithRetry(scrapeHawk, 'Hawk')
     ]);
     
-    const allMatches = [
+    const rawMatches = [
       ...(dltvMatches.status === 'fulfilled' ? dltvMatches.value : []),
       ...(hawkMatches.status === 'fulfilled' ? hawkMatches.value : [])
     ];
+
+    const allMatches = deduplicateMatches(rawMatches);
     
     if (allMatches.length === 0) {
       consecutiveFailures++;
@@ -62,7 +93,7 @@ export async function scrapeAll(io) {
       io.emit('matches-update', getMatches());
     }
     
-    console.log(`Scraped ${allMatches.length} matches`);
+    console.log(`Scraped ${rawMatches.length} raw → ${allMatches.length} unique matches`);
   } catch (error) {
     console.error('Scraping error:', error);
   } finally {
