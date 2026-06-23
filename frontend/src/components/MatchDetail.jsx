@@ -43,97 +43,137 @@ function parseTowers(state) {
   }
 }
 
-function TowerMap({ radiantState, direState }) {
+function TowerMap({ radiantState, direState, teamA, teamB }) {
   const rTowers = parseTowers(radiantState)
   const dTowers = parseTowers(direState)
+
+  const getTowerCount = (t) => (t.top > 0 ? 1 : 0) + (t.mid > 0 ? 1 : 0) + (t.bot > 0 ? 1 : 0)
   
   return (
     <div className={styles.towerMap}>
-      <div className={styles.towerLane}>
-        <span className={styles.towerLabel}>Top</span>
+      <div className={styles.towerRow}>
+        <span className={styles.towerTeam}>{teamA}</span>
         <div className={styles.towers}>
-          <div className={`${styles.tower} ${rTowers.top > 0 ? styles.alive : styles.dead}`}>T</div>
-          <div className={`${styles.tower} ${dTowers.top > 0 ? styles.alive : styles.dead}`}>T</div>
+          {['top', 'mid', 'bot'].map(lane => (
+            <div key={lane} className={styles.towerGroup}>
+              <span className={styles.laneLabel}>{lane.toUpperCase()}</span>
+              <div className={`${styles.tower} ${rTowers[lane] > 0 ? styles.alive : styles.dead}`}>
+                {rTowers[lane] > 0 ? 'T' : '×'}
+              </div>
+            </div>
+          ))}
         </div>
+        <span className={styles.towerCount}>{getTowerCount(rTowers)}/3</span>
       </div>
-      <div className={styles.towerLane}>
-        <span className={styles.towerLabel}>Mid</span>
+      
+      <div className={styles.towerDivider}></div>
+      
+      <div className={styles.towerRow}>
+        <span className={styles.towerTeam}>{teamB}</span>
         <div className={styles.towers}>
-          <div className={`${styles.tower} ${rTowers.mid > 0 ? styles.alive : styles.dead}`}>T</div>
-          <div className={`${styles.tower} ${dTowers.mid > 0 ? styles.alive : styles.dead}`}>T</div>
+          {['top', 'mid', 'bot'].map(lane => (
+            <div key={lane} className={styles.towerGroup}>
+              <span className={styles.laneLabel}>{lane.toUpperCase()}</span>
+              <div className={`${styles.tower} ${dTowers[lane] > 0 ? styles.alive : styles.dead}`}>
+                {dTowers[lane] > 0 ? 'T' : '×'}
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-      <div className={styles.towerLane}>
-        <span className={styles.towerLabel}>Bot</span>
-        <div className={styles.towers}>
-          <div className={`${styles.tower} ${rTowers.bot > 0 ? styles.alive : styles.dead}`}>T</div>
-          <div className={`${styles.tower} ${dTowers.bot > 0 ? styles.alive : styles.dead}`}>T</div>
-        </div>
+        <span className={styles.towerCount}>{getTowerCount(dTowers)}/3</span>
       </div>
     </div>
   )
 }
 
-function DraftAnalytics({ match }) {
-  const { teamA, teamB, picks, bans, teamAPicks, teamBPicks, teamABans, teamBBans } = match
+function WinPrediction({ match }) {
+  const { teamA, teamB, picks, teamAPicks, teamBPicks, radiantScore, direScore, gameTime, radiantLead, towerState } = match
   
-  const STR_AGIS = { str: 0, agi: 0, int: 0 }
-  const teamAStats = { ...STR_AGIS }
-  const teamBStats = { ...STR_AGIS }
+  const aPicks = teamAPicks || picks?.slice(0, Math.ceil((picks?.length || 0) / 2)) || []
+  const bPicks = teamBPicks || picks?.slice(Math.ceil((picks?.length || 0) / 2)) || []
   
-  ;(teamAPicks || []).forEach(hero => {
-    const h = getHeroByName(hero)
-    if (h?.attribute) teamAStats[h.attribute]++
-  })
-  ;(teamBPicks || []).forEach(hero => {
-    const h = getHeroByName(hero)
-    if (h?.attribute) teamBStats[h.attribute]++
-  })
-
-  const roles = { carry: 0, support: 0, initiator: 0, nuker: 0 }
-  const teamARoles = { ...roles }
-  const teamBRoles = { ...roles }
-
+  const calculateScore = (heroPicks) => {
+    let score = 50
+    const heroes = heroPicks.map(h => getHeroByName(h))
+    
+    let hasCarry = false, hasSupport = false, hasInitiator = false, hasNuker = false
+    let str = 0, agi = 0, int = 0
+    
+    heroes.forEach(h => {
+      if (h.attribute === 'str') str++
+      if (h.attribute === 'agi') agi++
+      if (h.attribute === 'int') int++
+    })
+    
+    if (str > 0 && agi > 0 && int > 0) score += 5
+    if (heroPicks.length >= 5) score += 3
+    
+    return score
+  }
+  
+  let teamAScore = calculateScore(aPicks)
+  let teamBScore = calculateScore(bPicks)
+  
+  if (gameTime > 0) {
+    if (radiantScore > direScore) teamAScore += (radiantScore - direScore) * 2
+    if (direScore > radiantScore) teamBScore += (direScore - radiantScore) * 2
+    if (radiantLead > 0) teamAScore += Math.min(radiantLead / 1000, 10)
+    if (radiantLead < 0) teamBScore += Math.min(Math.abs(radiantLead) / 1000, 10)
+  }
+  
+  const total = teamAScore + teamBScore
+  const teamAPercent = Math.round((teamAScore / total) * 100)
+  const teamBPercent = 100 - teamAPercent
+  
+  const leading = teamAPercent > teamBPercent ? teamA : teamB
+  const leadingPercent = Math.max(teamAPercent, teamBPercent)
+  
+  const reasons = []
+  if (aPicks.length >= 5 && bPicks.length < 5) reasons.push(`${teamA} has complete draft`)
+  if (bPicks.length >= 5 && aPicks.length < 5) reasons.push(`${teamB} has complete draft`)
+  if (radiantScore > direScore) reasons.push(`${teamA} leads in kills (${radiantScore}-${direScore})`)
+  if (direScore > radiantScore) reasons.push(`${teamB} leads in kills (${direScore}-${radiantScore})`)
+  if (radiantLead > 2000) reasons.push(`${teamA} has ${radiantLead} NW advantage`)
+  if (radiantLead < -2000) reasons.push(`${teamB} has ${Math.abs(radiantLead)} NW advantage`)
+  if (reasons.length === 0) reasons.push('Drafts are balanced')
+  
   return (
-    <div className={styles.analytics}>
-      <h2>Draft Analytics</h2>
+    <div className={styles.prediction}>
+      <div className={styles.predictionHeader}>
+        <span className={styles.predictionIcon}>📊</span>
+        <span className={styles.predictionTitle}>Win Prediction</span>
+      </div>
       
-      <div className={styles.analyticsGrid}>
-        <div className={styles.analyticsCard}>
-          <h4>Attribute Balance</h4>
-          <div className={styles.attrRow}>
-            <span>{teamA}</span>
-            <span className={styles.attrBalance}>
-              <span className={styles.str}>{teamAStats.str}S</span>
-              <span className={styles.agi}>{teamAStats.agi}A</span>
-              <span className={styles.int}>{teamAStats.int}I</span>
-            </span>
-          </div>
-          <div className={styles.attrRow}>
-            <span>{teamB}</span>
-            <span className={styles.attrBalance}>
-              <span className={styles.str}>{teamBStats.str}S</span>
-              <span className={styles.agi}>{teamBStats.agi}A</span>
-              <span className={styles.int}>{teamBStats.int}I</span>
-            </span>
-          </div>
+      <div className={styles.predictionBar}>
+        <div className={`${styles.barLeft} ${teamAPercent > teamBPercent ? styles.leading : ''}`}
+             style={{ width: `${teamAPercent}%` }}>
+          {teamAPercent}%
         </div>
-
-        <div className={styles.analyticsCard}>
-          <h4>Draft Summary</h4>
-          <div className={styles.summaryRow}>
-            <span>{teamA} picks:</span>
-            <span>{teamAPicks?.length || 0} heroes</span>
-          </div>
-          <div className={styles.summaryRow}>
-            <span>{teamB} picks:</span>
-            <span>{teamBPicks?.length || 0} heroes</span>
-          </div>
-          <div className={styles.summaryRow}>
-            <span>Total bans:</span>
-            <span>{bans?.length || 0} heroes</span>
-          </div>
+        <div className={`${styles.barRight} ${teamBPercent > teamAPercent ? styles.leading : ''}`}
+             style={{ width: `${teamBPercent}%` }}>
+          {teamBPercent}%
         </div>
+      </div>
+      
+      <div className={styles.predictionTeams}>
+        <span>{teamA}</span>
+        <span>{teamB}</span>
+      </div>
+      
+      <div className={styles.predictionResult}>
+        <span className={styles.winnerLabel}>Favored:</span>
+        <span className={styles.winnerName}>{leading}</span>
+        <span className={styles.winnerPercent}>({leadingPercent}%)</span>
+      </div>
+      
+      <div className={styles.predictionReasons}>
+        {reasons.map((reason, i) => (
+          <div key={i} className={styles.reason}>• {reason}</div>
+        ))}
+      </div>
+      
+      <div className={styles.predictionDisclaimer}>
+        Draft-based prediction. For reference only.
       </div>
     </div>
   )
@@ -172,7 +212,7 @@ export default function MatchDetail() {
     )
   }
 
-  const { tournament, teamA, teamB, teamALogo, teamBLogo, bans, picks, status, format, matchTime, teamAScore, teamBScore, source, gameTime, radiantScore, direScore, radiantLead, towerState, teamAPicks, teamBPicks, teamABans, teamBBans, isPicksEnded, firstBlood } = match
+  const { tournament, teamA, teamB, teamALogo, teamBLogo, bans, picks, status, format, matchTime, teamAScore, teamBScore, source, gameTime, radiantScore, direScore, radiantLead, towerState, teamAPicks, teamBPicks, teamABans, teamBBans, isPicksEnded } = match
 
   const statusLabels = {
     live: 'LIVE',
@@ -181,6 +221,12 @@ export default function MatchDetail() {
     drafting: 'DRAFTING',
     finished: 'FINISHED',
   }
+
+  const isLive = status === 'live' || (gameTime > 0)
+  const showBans = !isLive || (bans?.length > 0 && gameTime < 120)
+
+  const rScore = radiantScore ?? teamAScore ?? 0
+  const dScore = direScore ?? teamBScore ?? 0
 
   return (
     <div className={styles.container}>
@@ -198,7 +244,7 @@ export default function MatchDetail() {
             <div className={styles.teamName}>{teamA}</div>
             <div className={styles.side}>Radiant</div>
           </div>
-          <div className={styles.score}>{radiantScore ?? teamAScore ?? 0}</div>
+          <div className={styles.score}>{rScore}</div>
         </div>
 
         <div className={styles.vsSection}>
@@ -208,21 +254,22 @@ export default function MatchDetail() {
           <div className={styles.gameTime}>
             {gameTime > 0 ? formatGameTime(gameTime) : (status === 'drafting' ? 'Draft' : '—')}
           </div>
-          {radiantLead !== 0 && (
-            <div className={`${styles.lead} ${radiantLead > 0 ? styles.positive : styles.negative}`}>
-              {radiantLead > 0 ? '+' : ''}{radiantLead} NW
-            </div>
-          )}
-          {firstBlood && (
-            <div className={styles.firstBlood}>
-              FB: {firstBlood === 'radiant' ? teamA : teamB}
+          {isLive && radiantLead !== 0 && (
+            <div className={styles.nwIndicator}>
+              <span className={styles.nwLabel}>NW</span>
+              <span className={`${styles.nwValue} ${radiantLead > 0 ? styles.positive : styles.negative}`}>
+                {radiantLead > 0 ? `+${radiantLead}` : radiantLead}
+              </span>
+              <span className={styles.nwTeam}>
+                {radiantLead > 0 ? teamA : teamB} leading
+              </span>
             </div>
           )}
           {matchTime && <div className={styles.time}>{matchTime}</div>}
         </div>
 
         <div className={`${styles.team} ${styles.dire}`}>
-          <div className={styles.score}>{direScore ?? teamBScore ?? 0}</div>
+          <div className={styles.score}>{dScore}</div>
           <div className={styles.teamInfo}>
             <div className={styles.teamName}>{teamB}</div>
             <div className={styles.side}>Dire</div>
@@ -234,11 +281,11 @@ export default function MatchDetail() {
       {towerState && (towerState.radiant > 0 || towerState.dire > 0) && (
         <div className={styles.towerSection}>
           <h2>Tower Status</h2>
-          <TowerMap radiantState={towerState.radiant} direState={towerState.dire} />
+          <TowerMap radiantState={towerState.radiant} direState={towerState.dire} teamA={teamA} teamB={teamB} />
         </div>
       )}
 
-      {(picks?.length > 0 || bans?.length > 0) && (
+      {(picks?.length > 0) && (
         <div className={styles.draftSection}>
           <h2>Draft</h2>
           
@@ -257,7 +304,7 @@ export default function MatchDetail() {
                 </div>
               )}
               
-              {(teamABans || bans?.slice(0, Math.ceil(bans.length / 2)) || []).length > 0 && (
+              {showBans && (teamABans || bans?.slice(0, Math.ceil(bans.length / 2)) || []).length > 0 && (
                 <div className={styles.phase}>
                   <span className={styles.phaseLabel}>Bans</span>
                   <div className={styles.heroList}>
@@ -285,7 +332,7 @@ export default function MatchDetail() {
                 </div>
               )}
               
-              {(teamBBans || bans?.slice(Math.ceil(bans.length / 2)) || []).length > 0 && (
+              {showBans && (teamBBans || bans?.slice(Math.ceil(bans.length / 2)) || []).length > 0 && (
                 <div className={styles.phase}>
                   <span className={styles.phaseLabel}>Bans</span>
                   <div className={styles.heroList}>
@@ -300,7 +347,7 @@ export default function MatchDetail() {
         </div>
       )}
 
-      <DraftAnalytics match={match} />
+      <WinPrediction match={match} />
 
       <div className={styles.footer}>
         {source && <span className={styles.source}>Source: {source}</span>}
