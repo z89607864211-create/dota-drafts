@@ -1,0 +1,15 @@
+.footer {
+  padding: 20px;
+  background-color: #16213e;
+  border-top: 1px solid #0f3460;
+  text-align: center;
+}
+
+.content p {
+  margin: 5px 0;
+}
+
+.attribution {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}

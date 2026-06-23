@@ -1,0 +1,167 @@
+.container {
+  padding: 20px 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.container h2 {
+  font-size: 1.3rem;
+  color: #e94560;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.liveIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #0f3460;
+  background-color: #16213e;
+  color: #eee;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  border-color: #e94560;
+}
+
+.searchInput::placeholder {
+  opacity: 0.5;
+}
+
+.statusFilters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #0f3460;
+  background-color: #16213e;
+  color: #aaa;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterBtn:hover {
+  background-color: #1e2d50;
+  color: #eee;
+}
+
+.filterBtn.active {
+  background-color: #0f3460;
+  color: #eee;
+  border-color: #e94560;
+}
+
+.filterBtn.liveBtn.active {
+  background-color: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.filterBtn.draftingBtn.active {
+  background-color: rgba(234, 179, 8, 0.2);
+  border-color: #eab308;
+  color: #eab308;
+}
+
+.filterBtn.upcomingBtn.active {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #16213e;
+  border-radius: 12px;
+  border: 1px solid #0f3460;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.empty p {
+  margin: 8px 0;
+}
+
+.hint {
+  opacity: 0.5;
+  font-size: 0.9rem;
+}
+
+.skeleton {
+  animation: shimmer 1.5s infinite;
+  background: linear-gradient(90deg, #16213e 25%, #1e2d50 50%, #16213e 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skelLine {
+  height: 12px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.skelTeams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.skelCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.05);
+}
