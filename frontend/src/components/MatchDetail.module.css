@@ -146,17 +146,21 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  padding: 8px 16px;
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
 }
 
 .nwLabel {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
   color: var(--text-muted);
+  letter-spacing: 1px;
 }
 
 .nwValue {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .nwValue.positive {
@@ -168,7 +172,8 @@
 }
 
 .nwTeam {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
@@ -180,88 +185,167 @@
 .towerSection {
   background-color: var(--card-bg);
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px;
   border: 1px solid var(--card-border);
   margin-bottom: 24px;
 }
 
 .towerSection h2 {
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: var(--accent);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.towerMap {
+.miniMap {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 20px;
+  background-color: var(--bg-tertiary);
+  border-radius: 12px;
 }
 
-.towerRow {
+.mapLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.mapRow {
   display: flex;
-  align-items: center;
+  justify-content: space-around;
   gap: 16px;
 }
 
-.towerTeam {
-  font-size: 0.85rem;
-  font-weight: 600;
-  width: 100px;
-  text-align: right;
-  color: var(--text-secondary);
-}
-
-.towers {
-  display: flex;
-  gap: 12px;
-}
-
-.towerGroup {
+.mapLane {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  flex: 1;
 }
 
-.laneLabel {
-  font-size: 0.6rem;
+.laneName {
+  font-size: 0.65rem;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.tower {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+.towerLine {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mapTower {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.9rem;
 }
 
-.tower.alive {
+.mapTower.alive {
   background-color: rgba(34, 197, 94, 0.2);
   color: var(--success);
   border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
-.tower.dead {
-  background-color: var(--bg-tertiary);
+.mapTower.dead {
+  background-color: rgba(107, 114, 128, 0.1);
   color: var(--text-muted);
   border: 1px solid var(--border-color);
 }
 
-.towerCount {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+.mapRax {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
 }
 
-.towerDivider {
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 4px 0;
+.mapRax.alive {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: var(--info);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.mapRax.dead {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.ancientRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.ancientLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ancient {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.ancient.alive {
+  background-color: rgba(233, 69, 96, 0.2);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.ancient.dead {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: var(--text-muted);
+  border: 2px solid var(--border-color);
+}
+
+.mapDivider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  margin: 8px 0;
+}
+
+.mapLegend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.legendIcon {
+  margin-right: 4px;
+}
+
+.legendIcon.alive {
+  color: var(--success);
+}
+
+.legendIcon.dead {
+  color: var(--text-muted);
 }
 
 .draftSection {
@@ -517,13 +601,8 @@
     height: 1px;
   }
 
-  .towerRow {
+  .mapRow {
     flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .towerTeam {
-    width: auto;
-    text-align: left;
+    gap: 12px;
   }
 }

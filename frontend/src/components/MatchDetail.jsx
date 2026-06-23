@@ -26,61 +26,132 @@ function formatGameTime(seconds) {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
-function parseTowers(state) {
-  const towers = []
-  const bits = state.toString(2).padStart(32, '0')
-  for (let i = 0; i < 24; i += 3) {
-    towers.push(parseInt(bits.substring(i, i + 3), 2))
+function MiniMap({ radiantTowers, direTowers, teamA, teamB }) {
+  const parseTowers = (state) => {
+    const bits = state.toString(2).padStart(32, '0')
+    return {
+      topT1: bits[0] === '1',
+      topT2: bits[1] === '1',
+      topT3: bits[2] === '1',
+      midT1: bits[3] === '1',
+      midT2: bits[4] === '1',
+      midT3: bits[5] === '1',
+      botT1: bits[6] === '1',
+      botT2: bits[7] === '1',
+      botT3: bits[8] === '1',
+      raxTop: bits[9] === '1',
+      raxMid: bits[10] === '1',
+      raxBot: bits[11] === '1',
+      ancient: bits[12] === '1'
+    }
   }
-  return {
-    top: towers[0] || 0,
-    mid: towers[1] || 0,
-    bot: towers[2] || 0,
-    raxTop: towers[3] || 0,
-    raxMid: towers[4] || 0,
-    raxBot: towers[5] || 0,
-    ancient: towers[6] || 0
-  }
-}
 
-function TowerMap({ radiantState, direState, teamA, teamB }) {
-  const rTowers = parseTowers(radiantState)
-  const dTowers = parseTowers(direState)
+  const r = parseTowers(radiantTowers)
+  const d = parseTowers(direTowers)
 
-  const getTowerCount = (t) => (t.top > 0 ? 1 : 0) + (t.mid > 0 ? 1 : 0) + (t.bot > 0 ? 1 : 0)
-  
+  const Tower = ({ alive, className }) => (
+    <div className={`${styles.mapTower} ${alive ? styles.alive : styles.dead} ${className || ''}`}>
+      {alive ? '▲' : '×'}
+    </div>
+  )
+
+  const Barracks = ({ alive }) => (
+    <div className={`${styles.mapRax} ${alive ? styles.alive : styles.dead}`}>
+      {alive ? '■' : '×'}
+    </div>
+  )
+
   return (
-    <div className={styles.towerMap}>
-      <div className={styles.towerRow}>
-        <span className={styles.towerTeam}>{teamA}</span>
-        <div className={styles.towers}>
-          {['top', 'mid', 'bot'].map(lane => (
-            <div key={lane} className={styles.towerGroup}>
-              <span className={styles.laneLabel}>{lane.toUpperCase()}</span>
-              <div className={`${styles.tower} ${rTowers[lane] > 0 ? styles.alive : styles.dead}`}>
-                {rTowers[lane] > 0 ? 'T' : '×'}
-              </div>
-            </div>
-          ))}
+    <div className={styles.miniMap}>
+      <div className={styles.mapLabel}>{teamA} (Radiant)</div>
+      
+      <div className={styles.mapRow}>
+        <div className={styles.mapLane}>
+          <span className={styles.laneName}>TOP</span>
+          <div className={styles.towerLine}>
+            <Tower alive={r.topT1} />
+            <Tower alive={r.topT2} />
+            <Tower alive={r.topT3} />
+            <Barracks alive={r.raxTop} />
+          </div>
         </div>
-        <span className={styles.towerCount}>{getTowerCount(rTowers)}/3</span>
+        
+        <div className={styles.mapLane}>
+          <span className={styles.laneName}>MID</span>
+          <div className={styles.towerLine}>
+            <Tower alive={r.midT1} />
+            <Tower alive={r.midT2} />
+            <Tower alive={r.midT3} />
+            <Barracks alive={r.raxMid} />
+          </div>
+        </div>
+        
+        <div className={styles.mapLane}>
+          <span className={styles.laneName}>BOT</span>
+          <div className={styles.towerLine}>
+            <Tower alive={r.botT1} />
+            <Tower alive={r.botT2} />
+            <Tower alive={r.botT3} />
+            <Barracks alive={r.raxBot} />
+          </div>
+        </div>
       </div>
-      
-      <div className={styles.towerDivider}></div>
-      
-      <div className={styles.towerRow}>
-        <span className={styles.towerTeam}>{teamB}</span>
-        <div className={styles.towers}>
-          {['top', 'mid', 'bot'].map(lane => (
-            <div key={lane} className={styles.towerGroup}>
-              <span className={styles.laneLabel}>{lane.toUpperCase()}</span>
-              <div className={`${styles.tower} ${dTowers[lane] > 0 ? styles.alive : styles.dead}`}>
-                {dTowers[lane] > 0 ? 'T' : '×'}
-              </div>
-            </div>
-          ))}
+
+      <div className={styles.ancientRow}>
+        <span className={styles.ancientLabel}>ANCIENT</span>
+        <div className={`${styles.ancient} ${r.ancient ? styles.alive : styles.dead}`}>
+          {r.ancient ? '◆' : '×'}
         </div>
-        <span className={styles.towerCount}>{getTowerCount(dTowers)}/3</span>
+      </div>
+
+      <div className={styles.mapDivider}></div>
+
+      <div className={styles.ancientRow}>
+        <span className={styles.ancientLabel}>ANCIENT</span>
+        <div className={`${styles.ancient} ${d.ancient ? styles.alive : styles.dead}`}>
+          {d.ancient ? '◆' : '×'}
+        </div>
+      </div>
+
+      <div className={styles.mapRow}>
+        <div className={styles.mapLane}>
+          <span className={styles.laneName}>TOP</span>
+          <div className={styles.towerLine}>
+            <Barracks alive={d.raxTop} />
+            <Tower alive={d.topT3} />
+            <Tower alive={d.topT2} />
+            <Tower alive={d.topT1} />
+          </div>
+        </div>
+        
+        <div className={styles.mapLane}>
+          <span className={styles.laneName}>MID</span>
+          <div className={styles.towerLine}>
+            <Barracks alive={d.raxMid} />
+            <Tower alive={d.midT3} />
+            <Tower alive={d.midT2} />
+            <Tower alive={d.midT1} />
+          </div>
+        </div>
+        
+        <div className={styles.mapLane}>
+          <span className={styles.laneName}>BOT</span>
+          <div className={styles.towerLine}>
+            <Barracks alive={d.raxBot} />
+            <Tower alive={d.botT3} />
+            <Tower alive={d.botT2} />
+            <Tower alive={d.botT1} />
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.mapLabel}>{teamB} (Dire)</div>
+      
+      <div className={styles.mapLegend}>
+        <span><span className={`${styles.legendIcon} ${styles.alive}`}>▲</span> Tower</span>
+        <span><span className={`${styles.legendIcon} ${styles.alive}`}>■</span> Barracks</span>
+        <span><span className={`${styles.legendIcon} ${styles.alive}`}>◆</span> Ancient</span>
+        <span><span className={`${styles.legendIcon} ${styles.dead}`}>×</span> Destroyed</span>
       </div>
     </div>
   )
@@ -96,9 +167,7 @@ function WinPrediction({ match }) {
     let score = 50
     const heroes = heroPicks.map(h => getHeroByName(h))
     
-    let hasCarry = false, hasSupport = false, hasInitiator = false, hasNuker = false
     let str = 0, agi = 0, int = 0
-    
     heroes.forEach(h => {
       if (h.attribute === 'str') str++
       if (h.attribute === 'agi') agi++
@@ -133,8 +202,8 @@ function WinPrediction({ match }) {
   if (bPicks.length >= 5 && aPicks.length < 5) reasons.push(`${teamB} has complete draft`)
   if (radiantScore > direScore) reasons.push(`${teamA} leads in kills (${radiantScore}-${direScore})`)
   if (direScore > radiantScore) reasons.push(`${teamB} leads in kills (${direScore}-${radiantScore})`)
-  if (radiantLead > 2000) reasons.push(`${teamA} has ${radiantLead} NW advantage`)
-  if (radiantLead < -2000) reasons.push(`${teamB} has ${Math.abs(radiantLead)} NW advantage`)
+  if (radiantLead > 2000) reasons.push(`${teamA} has ${Math.abs(radiantLead).toLocaleString()} NW advantage`)
+  if (radiantLead < -2000) reasons.push(`${teamB} has ${Math.abs(radiantLead).toLocaleString()} NW advantage`)
   if (reasons.length === 0) reasons.push('Drafts are balanced')
   
   return (
@@ -212,7 +281,7 @@ export default function MatchDetail() {
     )
   }
 
-  const { tournament, teamA, teamB, teamALogo, teamBLogo, bans, picks, status, format, matchTime, teamAScore, teamBScore, source, gameTime, radiantScore, direScore, radiantLead, towerState, teamAPicks, teamBPicks, teamABans, teamBBans, isPicksEnded } = match
+  const { tournament, teamA, teamB, teamALogo, teamBLogo, bans, picks, status, format, matchTime, teamAScore, teamBScore, source, gameTime, radiantScore, direScore, radiantLead, towerState, teamAPicks, teamBPicks, teamABans, teamBBans } = match
 
   const statusLabels = {
     live: 'LIVE',
@@ -227,6 +296,9 @@ export default function MatchDetail() {
 
   const rScore = radiantScore ?? teamAScore ?? 0
   const dScore = direScore ?? teamBScore ?? 0
+
+  const nwAbs = Math.abs(radiantLead || 0)
+  const nwLeadingTeam = radiantLead > 0 ? teamA : (radiantLead < 0 ? teamB : null)
 
   return (
     <div className={styles.container}>
@@ -254,15 +326,13 @@ export default function MatchDetail() {
           <div className={styles.gameTime}>
             {gameTime > 0 ? formatGameTime(gameTime) : (status === 'drafting' ? 'Draft' : '—')}
           </div>
-          {isLive && radiantLead !== 0 && (
+          {isLive && nwLeadingTeam && (
             <div className={styles.nwIndicator}>
-              <span className={styles.nwLabel}>NW</span>
+              <span className={styles.nwLabel}>NET WORTH</span>
               <span className={`${styles.nwValue} ${radiantLead > 0 ? styles.positive : styles.negative}`}>
-                {radiantLead > 0 ? `+${radiantLead}` : radiantLead}
+                +{nwAbs.toLocaleString()}
               </span>
-              <span className={styles.nwTeam}>
-                {radiantLead > 0 ? teamA : teamB} leading
-              </span>
+              <span className={styles.nwTeam}>{nwLeadingTeam}</span>
             </div>
           )}
           {matchTime && <div className={styles.time}>{matchTime}</div>}
@@ -281,7 +351,7 @@ export default function MatchDetail() {
       {towerState && (towerState.radiant > 0 || towerState.dire > 0) && (
         <div className={styles.towerSection}>
           <h2>Tower Status</h2>
-          <TowerMap radiantState={towerState.radiant} direState={towerState.dire} teamA={teamA} teamB={teamB} />
+          <MiniMap radiantTowers={towerState.radiant} direTowers={towerState.dire} teamA={teamA} teamB={teamB} />
         </div>
       )}
 
