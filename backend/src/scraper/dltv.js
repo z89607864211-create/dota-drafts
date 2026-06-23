@@ -51,6 +51,11 @@ export async function scrapeDltv() {
           bans: [],
           picks: [],
           status,
+          gameTime: 0,
+          radiantScore: 0,
+          direScore: 0,
+          radiantLead: 0,
+          towerState: { radiant: 0, dire: 0 },
           timestamp: Date.now()
         });
       }
@@ -58,27 +63,38 @@ export async function scrapeDltv() {
 
     const liveMatches = matches.filter(m => m.status === 'live' || m.status === 'drafting');
 
-    const draftPromises = liveMatches.map(async (match) => {
+    const livePromises = liveMatches.map(async (match) => {
       if (!match.matchId) return match;
       try {
-        const draftData = await fetchDltvDraft(match.matchId);
-        if (draftData) {
-          match.picks = draftData.picks;
-          match.bans = draftData.bans;
-          if (draftData.teamAName) match.teamA = draftData.teamAName;
-          if (draftData.teamBName) match.teamB = draftData.teamBName;
-          if (draftData.teamALogo) match.teamALogo = draftData.teamALogo;
-          if (draftData.teamBLogo) match.teamBLogo = draftData.teamBLogo;
+        const liveData = await fetchDltvLive(match.matchId);
+        if (liveData) {
+          match.picks = liveData.picks;
+          match.bans = liveData.bans;
+          match.gameTime = liveData.gameTime;
+          match.radiantScore = liveData.radiantScore;
+          match.direScore = liveData.direScore;
+          match.radiantLead = liveData.radiantLead;
+          match.towerState = liveData.towerState;
+          match.teamAPicks = liveData.teamAPicks;
+          match.teamBPicks = liveData.teamBPicks;
+          match.teamABans = liveData.teamABans;
+          match.teamBBans = liveData.teamBBans;
+          if (liveData.teamAName) match.teamA = liveData.teamAName;
+          if (liveData.teamBName) match.teamB = liveData.teamBName;
+          if (liveData.teamALogo) match.teamALogo = liveData.teamALogo;
+          if (liveData.teamBLogo) match.teamBLogo = liveData.teamBLogo;
+          match.isPicksEnded = liveData.isPicksEnded;
+          match.firstBlood = liveData.firstBlood;
         }
       } catch (e) {
-        console.error(`DLTV draft fetch failed for match ${match.matchId}:`, e.message);
+        console.error(`DLTV live fetch failed for match ${match.matchId}:`, e.message);
       }
       return match;
     });
 
-    await Promise.all(draftPromises);
+    await Promise.all(livePromises);
 
-    console.log(`DLTV: found ${matches.length} matches (${liveMatches.length} with draft data attempted)`);
+    console.log(`DLTV: found ${matches.length} matches (${liveMatches.length} with live data attempted)`);
     return matches;
   } catch (error) {
     console.error('DLTV scraping error:', error.message);
@@ -86,7 +102,7 @@ export async function scrapeDltv() {
   }
 }
 
-async function fetchDltvDraft(matchId) {
+async function fetchDltvLive(matchId) {
   const response = await axios.get(`https://dltv.org/live/${matchId}.json`, {
     timeout: 10000,
     headers: {
@@ -104,11 +120,16 @@ async function fetchDltvDraft(matchId) {
 
   const picks = [];
   const bans = [];
+  const teamAPicks = [];
+  const teamBPicks = [];
+  const teamABans = [];
+  const teamBBans = [];
 
   if (firstTeam?.picks) {
     for (const pick of firstTeam.picks) {
       if (pick.hero?.title) {
         picks.push(pick.hero.title);
+        teamAPicks.push(pick.hero.title);
       }
     }
   }
@@ -116,6 +137,7 @@ async function fetchDltvDraft(matchId) {
     for (const pick of secondTeam.picks) {
       if (pick.hero?.title) {
         picks.push(pick.hero.title);
+        teamBPicks.push(pick.hero.title);
       }
     }
   }
@@ -124,6 +146,7 @@ async function fetchDltvDraft(matchId) {
     for (const ban of firstTeam.bans) {
       if (ban.hero?.title) {
         bans.push(ban.hero.title);
+        teamABans.push(ban.hero.title);
       }
     }
   }
@@ -131,16 +154,34 @@ async function fetchDltvDraft(matchId) {
     for (const ban of secondTeam.bans) {
       if (ban.hero?.title) {
         bans.push(ban.hero.title);
+        teamBBans.push(ban.hero.title);
       }
     }
+  }
+
+  const towerState = { radiant: 0, dire: 0 };
+  if (data.live_league_data?.scoreboard) {
+    towerState.radiant = data.live_league_data.scoreboard.radiant?.tower_state || 0;
+    towerState.dire = data.live_league_data.scoreboard.dire?.tower_state || 0;
   }
 
   return {
     picks,
     bans,
+    teamAPicks,
+    teamBPicks,
+    teamABans,
+    teamBBans,
     teamAName: firstTeam?.title,
     teamBName: secondTeam?.title,
     teamALogo: firstTeam?.image ? `https://s3.dltv.org${firstTeam.image}` : null,
-    teamBLogo: secondTeam?.image ? `https://s3.dltv.org${secondTeam.image}` : null
+    teamBLogo: secondTeam?.image ? `https://s3.dltv.org${secondTeam.image}` : null,
+    gameTime: data.game_time || 0,
+    radiantScore: data.radiant_score || 0,
+    direScore: data.dire_score || 0,
+    radiantLead: data.radiant_lead || 0,
+    towerState,
+    isPicksEnded: data.is_picks_ended || false,
+    firstBlood: data.first_blood || null
   };
 }
